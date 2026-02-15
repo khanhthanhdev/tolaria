@@ -81,24 +81,24 @@ const mockEntries: VaultEntry[] = [
 
 describe('NoteList', () => {
   it('shows empty state when no entries', () => {
-    render(<NoteList entries={[]} selection={allSelection} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
+    const { container } = render(<NoteList entries={[]} selection={allSelection} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
     expect(screen.getByText('No notes found')).toBeInTheDocument()
-    expect(screen.getByText('0')).toBeInTheDocument()
+    expect(container.querySelector('.note-list__count')!.textContent).toBe('0')
   })
 
   it('renders all entries with All Notes filter', () => {
-    render(<NoteList entries={mockEntries} selection={allSelection} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
+    const { container } = render(<NoteList entries={mockEntries} selection={allSelection} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
     expect(screen.getByText('Build Laputa App')).toBeInTheDocument()
     expect(screen.getByText('Facebook Ads Strategy')).toBeInTheDocument()
     expect(screen.getByText('Matteo Cellini')).toBeInTheDocument()
-    expect(screen.getByText('5')).toBeInTheDocument()
+    expect(container.querySelector('.note-list__count')!.textContent).toBe('5')
   })
 
   it('filters by People', () => {
-    render(<NoteList entries={mockEntries} selection={{ kind: 'filter', filter: 'people' }} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
+    const { container } = render(<NoteList entries={mockEntries} selection={{ kind: 'filter', filter: 'people' }} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
     expect(screen.getByText('Matteo Cellini')).toBeInTheDocument()
     expect(screen.queryByText('Build Laputa App')).not.toBeInTheDocument()
-    expect(screen.getByText('1')).toBeInTheDocument()
+    expect(container.querySelector('.note-list__count')!.textContent).toBe('1')
   })
 
   it('filters by Events', () => {
@@ -108,21 +108,21 @@ describe('NoteList', () => {
   })
 
   it('filters by section group type', () => {
-    render(<NoteList entries={mockEntries} selection={{ kind: 'sectionGroup', type: 'Project' }} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
+    const { container } = render(<NoteList entries={mockEntries} selection={{ kind: 'sectionGroup', type: 'Project' }} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
     expect(screen.getByText('Build Laputa App')).toBeInTheDocument()
     expect(screen.queryByText('Matteo Cellini')).not.toBeInTheDocument()
-    expect(screen.getByText('1')).toBeInTheDocument()
+    expect(container.querySelector('.note-list__count')!.textContent).toBe('1')
   })
 
   it('shows entity pinned at top with children', () => {
-    render(
+    const { container } = render(
       <NoteList entries={mockEntries} selection={{ kind: 'entity', entry: mockEntries[0] }} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />
     )
     // Pinned entity + child (Facebook Ads Strategy belongsTo this project)
     expect(screen.getByText('Build Laputa App')).toBeInTheDocument()
     expect(screen.getByText('Facebook Ads Strategy')).toBeInTheDocument()
     expect(screen.queryByText('Matteo Cellini')).not.toBeInTheDocument()
-    expect(screen.getByText('2')).toBeInTheDocument()
+    expect(container.querySelector('.note-list__count')!.textContent).toBe('2')
   })
 
   it('filters by topic (relatedTo references)', () => {
@@ -140,12 +140,12 @@ describe('NoteList', () => {
   })
 
   it('filters by search query (case-insensitive substring)', () => {
-    render(<NoteList entries={mockEntries} selection={allSelection} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
+    const { container } = render(<NoteList entries={mockEntries} selection={allSelection} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
     const input = screen.getByPlaceholderText('Search notes...')
     fireEvent.change(input, { target: { value: 'facebook' } })
     expect(screen.getByText('Facebook Ads Strategy')).toBeInTheDocument()
     expect(screen.queryByText('Build Laputa App')).not.toBeInTheDocument()
-    expect(screen.getByText('1')).toBeInTheDocument()
+    expect(container.querySelector('.note-list__count')!.textContent).toBe('1')
   })
 
   it('sorts entries by last modified descending', () => {
@@ -160,30 +160,37 @@ describe('NoteList', () => {
     expect(titleTexts).toEqual(['Newest', 'Middle', 'Oldest'])
   })
 
-  it('renders type filter pills', () => {
+  it('renders type filter pills with counts and hides empty types', () => {
     const { container } = render(<NoteList entries={mockEntries} selection={allSelection} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
     const pills = container.querySelectorAll('.note-list__pill')
     const labels = Array.from(pills).map((p) => p.textContent)
-    expect(labels).toContain('All')
-    expect(labels).toContain('Projects')
-    expect(labels).toContain('Notes')
-    expect(labels).toContain('Events')
-    expect(labels).toContain('People')
+    expect(labels).toContain('All 5')
+    expect(labels).toContain('Projects 1')
+    expect(labels).toContain('Notes 1')
+    expect(labels).toContain('Events 1')
+    expect(labels).toContain('People 1')
+    // Empty types should be hidden
+    expect(labels.some((l) => l?.startsWith('Experiments'))).toBe(false)
+    expect(labels.some((l) => l?.startsWith('Procedures'))).toBe(false)
+    expect(labels.some((l) => l?.startsWith('Responsibilities'))).toBe(false)
   })
 
   it('filters by type pill', () => {
-    render(<NoteList entries={mockEntries} selection={allSelection} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
-    fireEvent.click(screen.getByText('Projects'))
+    const { container } = render(<NoteList entries={mockEntries} selection={allSelection} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
+    const projectsPill = Array.from(container.querySelectorAll('.note-list__pill')).find((p) => p.textContent?.startsWith('Projects'))!
+    fireEvent.click(projectsPill)
     expect(screen.getByText('Build Laputa App')).toBeInTheDocument()
     expect(screen.queryByText('Matteo Cellini')).not.toBeInTheDocument()
     expect(screen.queryByText('Facebook Ads Strategy')).not.toBeInTheDocument()
   })
 
   it('clicking All pill resets type filter', () => {
-    render(<NoteList entries={mockEntries} selection={allSelection} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
-    fireEvent.click(screen.getByText('People'))
+    const { container } = render(<NoteList entries={mockEntries} selection={allSelection} selectedNote={null} onSelectNote={noopSelect} allContent={{}} onCreateNote={vi.fn()} />)
+    const peoplePill = Array.from(container.querySelectorAll('.note-list__pill')).find((p) => p.textContent?.startsWith('People'))!
+    fireEvent.click(peoplePill)
     expect(screen.queryByText('Build Laputa App')).not.toBeInTheDocument()
-    fireEvent.click(screen.getByText('All'))
+    const allPill = Array.from(container.querySelectorAll('.note-list__pill')).find((p) => p.textContent?.startsWith('All'))!
+    fireEvent.click(allPill)
     expect(screen.getByText('Build Laputa App')).toBeInTheDocument()
   })
 })

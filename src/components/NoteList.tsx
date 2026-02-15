@@ -130,6 +130,15 @@ export function NoteList({ entries, selection, selectedNote, allContent, onSelec
     ? sorted.filter((e) => e.title.toLowerCase().includes(query))
     : sorted
 
+  // Compute per-type counts from the searched results (before type filter)
+  const typeCounts = new Map<string | null, number>()
+  typeCounts.set(null, searched.length) // "All" count
+  for (const entry of searched) {
+    if (entry.isA) {
+      typeCounts.set(entry.isA, (typeCounts.get(entry.isA) ?? 0) + 1)
+    }
+  }
+
   // Type filter pills
   const displayed = typeFilter
     ? searched.filter((e) => e.isA === typeFilter)
@@ -156,15 +165,21 @@ export function NoteList({ entries, selection, selectedNote, allContent, onSelec
         />
       </div>
       <div className="note-list__pills">
-        {TYPE_PILLS.map(({ label, type }) => (
-          <button
-            key={label}
-            className={`note-list__pill${typeFilter === type ? ' note-list__pill--active' : ''}`}
-            onClick={() => setTypeFilter(type)}
-          >
-            {label}
-          </button>
-        ))}
+        {TYPE_PILLS.filter(({ type }) => {
+          const count = typeCounts.get(type) ?? 0
+          return type === null || count > 0
+        }).map(({ label, type }) => {
+          const count = typeCounts.get(type) ?? 0
+          return (
+            <button
+              key={label}
+              className={`note-list__pill${typeFilter === type ? ' note-list__pill--active' : ''}`}
+              onClick={() => setTypeFilter(type)}
+            >
+              {label} <span className="note-list__pill-count">{count}</span>
+            </button>
+          )
+        })}
       </div>
       <div className="note-list__items">
         {displayed.length === 0 ? (
