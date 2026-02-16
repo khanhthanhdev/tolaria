@@ -78,6 +78,18 @@
   margin-bottom: var(--lists-item-spacing);
 }
 
+/* Bullet marker styling — BlockNote uses ::before or a span for the bullet */
+.editor__blocknote-container [data-content-type="bulletListItem"] .bn-block-content::before,
+.editor__blocknote-container [data-content-type="bulletListItem"] li::marker {
+  font-size: var(--lists-bullet-size) !important;
+  color: var(--lists-bullet-color) !important;
+}
+
+/* List indentation */
+.editor__blocknote-container .bn-block-group .bn-block-group {
+  margin-left: var(--lists-indent-size);
+}
+
 /* --- Numbered lists --- */
 .editor__blocknote-container [data-content-type="numberedListItem"] {
   padding-left: var(--lists-padding-left);

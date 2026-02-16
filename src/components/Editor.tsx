@@ -178,8 +178,7 @@ function BlockNoteTab({ content, entries, onNavigateWikilink }: { content: strin
       editor.replaceBlocks(editor.document, withWikilinks)
     }
     load()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [body])
+  }, [body, editor])
 
   // Click handler for wikilinks
   useEffect(() => {
