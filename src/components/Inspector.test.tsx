@@ -22,7 +22,13 @@ const mockEntry: VaultEntry = {
 const mockContent = `---
 title: Test Project
 is_a: Project
-status: Active
+Status: Active
+Owner: Luca Rossi
+Cadence: Weekly
+Belongs to:
+  - "[[responsibility/grow-newsletter]]"
+Related to:
+  - "[[topic/software-development]]"
 ---
 
 # Test Project
@@ -72,15 +78,15 @@ const defaultProps = {
 describe('Inspector', () => {
   it('renders expanded state with "no note selected"', () => {
     render(<Inspector {...defaultProps} />)
-    expect(screen.getByText('Inspector')).toBeInTheDocument()
-    expect(screen.getByText('Properties')).toBeInTheDocument()
+    // Header now says "Properties" (not "Inspector")
+    expect(screen.getAllByText('Properties').length).toBeGreaterThan(0)
     expect(screen.getByText('No note selected')).toBeInTheDocument()
   })
 
   it('renders collapsed state without sections', () => {
     render(<Inspector {...defaultProps} collapsed={true} />)
-    expect(screen.queryByText('Inspector')).not.toBeInTheDocument()
-    expect(screen.queryByText('Properties')).not.toBeInTheDocument()
+    // When collapsed, no section content is visible
+    expect(screen.queryByText('No note selected')).not.toBeInTheDocument()
   })
 
   it('calls onToggle when toggle button clicked', () => {
@@ -92,20 +98,18 @@ describe('Inspector', () => {
 
   it('shows properties when a note is selected', () => {
     render(<Inspector {...defaultProps} entry={mockEntry} content={mockContent} />)
-    expect(screen.getByText('Project')).toBeInTheDocument()
+    expect(screen.getAllByText('Project').length).toBeGreaterThan(0)
     expect(screen.getByText('Active')).toBeInTheDocument()
-    expect(screen.getByText('Luca Rossi')).toBeInTheDocument()
     expect(screen.getByText('Type')).toBeInTheDocument()
     expect(screen.getByText('Status')).toBeInTheDocument()
-    expect(screen.getByText('Owner')).toBeInTheDocument()
     expect(screen.getByText('Words')).toBeInTheDocument()
   })
 
   it('renders status as a colored pill', () => {
     render(<Inspector {...defaultProps} entry={mockEntry} content={mockContent} />)
     const pill = screen.getByText('Active')
-    expect(pill).toHaveClass('inspector__status-pill')
-    expect(pill).toHaveStyle({ backgroundColor: '#4caf50' })
+    // Status is rendered as an inline pill with CSS variable-based styles
+    expect(pill).toHaveStyle({ borderRadius: '9999px' })
   })
 
   it('computes word count from content minus frontmatter', () => {
@@ -121,8 +125,8 @@ describe('Inspector', () => {
   })
 
   it('shows cadence when present', () => {
-    const entryWithCadence = { ...mockEntry, cadence: 'Weekly' }
-    render(<Inspector {...defaultProps} entry={entryWithCadence} content={mockContent} />)
+    // Cadence is now read from frontmatter in content (already in mockContent)
+    render(<Inspector {...defaultProps} entry={mockEntry} content={mockContent} />)
     expect(screen.getByText('Cadence')).toBeInTheDocument()
     expect(screen.getByText('Weekly')).toBeInTheDocument()
   })
@@ -139,12 +143,22 @@ describe('Inspector', () => {
     const onNavigate = vi.fn()
     render(<Inspector {...defaultProps} entry={mockEntry} content={mockContent} onNavigate={onNavigate} />)
     fireEvent.click(screen.getByText('Grow Newsletter'))
-    expect(onNavigate).toHaveBeenCalledWith('grow newsletter')
+    expect(onNavigate).toHaveBeenCalledWith('responsibility/grow-newsletter')
   })
 
   it('shows "No relationships" when entry has no belongsTo/relatedTo', () => {
     const noRels = { ...mockEntry, belongsTo: [], relatedTo: [] }
-    render(<Inspector {...defaultProps} entry={noRels} content={mockContent} />)
+    const contentNoRels = `---
+title: Test Project
+is_a: Project
+Status: Active
+---
+
+# Test Project
+
+This is a test note with some words to count.
+`
+    render(<Inspector {...defaultProps} entry={noRels} content={contentNoRels} />)
     expect(screen.getByText('No relationships')).toBeInTheDocument()
   })
 

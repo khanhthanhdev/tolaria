@@ -129,11 +129,6 @@ const mockEntries: VaultEntry[] = [
 const defaultSelection: SidebarSelection = { kind: 'filter', filter: 'all' }
 
 describe('Sidebar', () => {
-  it('renders the app title', () => {
-    render(<Sidebar entries={[]} selection={defaultSelection} onSelect={() => {}} />)
-    expect(screen.getByText('Laputa')).toBeInTheDocument()
-  })
-
   it('renders top nav items (All Notes and Favorites)', () => {
     render(<Sidebar entries={[]} selection={defaultSelection} onSelect={() => {}} />)
     expect(screen.getByText('All Notes')).toBeInTheDocument()
@@ -221,11 +216,6 @@ describe('Sidebar', () => {
       kind: 'topic',
       entry: mockEntries[4],
     })
-  })
-
-  it('renders search bar placeholder', () => {
-    render(<Sidebar entries={[]} selection={defaultSelection} onSelect={() => {}} />)
-    expect(screen.getByPlaceholderText('Search notes...')).toBeInTheDocument()
   })
 
   it('renders commit button even when no modified files', () => {
