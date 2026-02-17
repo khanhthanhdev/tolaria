@@ -83,6 +83,58 @@ function analyzeDiff(diff) {
         });
       }
     }
+    
+    // Layout changes - new components added
+    if (line.startsWith('+') && line.includes('"name":')) {
+      // Look back for "type": "frame" in recent lines
+      const frameTypeMatch = lines.slice(Math.max(0, i-5), i+1).find(l => 
+        l.startsWith('+') && l.includes('"type": "frame"')
+      );
+      
+      if (frameTypeMatch) {
+        const nameMatch = line.match(/"name":\s*"([^"]+)"/);
+        if (nameMatch) {
+          changes.layout.push({
+            action: 'added',
+            component: nameMatch[1],
+            type: 'frame'
+          });
+        }
+      }
+    }
+    
+    // Layout changes - components removed
+    if (line.startsWith('-') && line.includes('"name":')) {
+      const frameTypeMatch = lines.slice(Math.max(0, i-5), i+1).find(l => 
+        l.startsWith('-') && l.includes('"type": "frame"')
+      );
+      
+      if (frameTypeMatch) {
+        const nameMatch = line.match(/"name":\s*"([^"]+)"/);
+        if (nameMatch) {
+          changes.layout.push({
+            action: 'removed',
+            component: nameMatch[1],
+            type: 'frame'
+          });
+        }
+      }
+    }
+    
+    // Height changes (structural)
+    if (line.includes('"height":')) {
+      const oldMatch = lines[i-1]?.match(/"height":\s*(\d+)/);
+      const newMatch = line.match(/"height":\s*(\d+)/);
+      
+      if (oldMatch && newMatch && oldMatch[1] !== newMatch[1]) {
+        changes.layout.push({
+          action: 'resized',
+          property: 'height',
+          from: parseInt(oldMatch[1]),
+          to: parseInt(newMatch[1])
+        });
+      }
+    }
   }
   
   return changes;
@@ -186,6 +238,41 @@ function generateTasks(changes, intent) {
       priority: 'medium',
       description: 'Update spacing',
       details: `Spacing changes detected:\n${spacingList}\n\nUpdate src/theme.json spacing values.`
+    });
+  }
+  
+  // Layout changes → structural modifications
+  if (changes.layout.length > 0) {
+    const added = changes.layout.filter(l => l.action === 'added');
+    const removed = changes.layout.filter(l => l.action === 'removed');
+    const resized = changes.layout.filter(l => l.action === 'resized');
+    
+    let layoutDetails = 'Layout changes detected:\n\n';
+    
+    if (added.length > 0) {
+      layoutDetails += 'Components added:\n';
+      added.forEach(c => layoutDetails += `  + ${c.component} (${c.type})\n`);
+      layoutDetails += '\n';
+    }
+    
+    if (removed.length > 0) {
+      layoutDetails += 'Components removed:\n';
+      removed.forEach(c => layoutDetails += `  - ${c.component} (${c.type})\n`);
+      layoutDetails += '\n';
+    }
+    
+    if (resized.length > 0) {
+      layoutDetails += 'Components resized:\n';
+      resized.forEach(c => layoutDetails += `  • ${c.property}: ${c.from}px → ${c.to}px\n`);
+      layoutDetails += '\n';
+    }
+    
+    layoutDetails += 'Review ui-design.pen diff and update components accordingly.';
+    
+    tasks.push({
+      priority: 'high',
+      description: 'Update layout structure',
+      details: layoutDetails
     });
   }
   
