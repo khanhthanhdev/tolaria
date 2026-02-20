@@ -25,7 +25,7 @@ export function estimateTokens(text: string | number): number {
 
 const DEFAULT_CONTEXT_LIMIT = 180_000
 
-export function getContextLimit(model: string): number {
+export function getContextLimit(_model: string): number {
   return DEFAULT_CONTEXT_LIMIT
 }
 

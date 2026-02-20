@@ -261,8 +261,8 @@ function NoteListInner({ entries, selection, selectedNote, allContent, modifiedF
 
   const renderItem = useCallback((entry: VaultEntry, isPinned = false) => {
     const isSelected = selectedNote?.path === entry.path && !isPinned
-    const typeColor = getTypeColor(entry.isA)
-    const typeLightColor = getTypeLightColor(entry.isA)
+    const typeColor = getTypeColor(entry.isA ?? 'Note')
+    const typeLightColor = getTypeLightColor(entry.isA ?? 'Note')
     const TypeIcon = getTypeIcon(entry.isA)
     return (
       <div
@@ -349,8 +349,8 @@ function NoteListInner({ entries, selection, selectedNote, allContent, modifiedF
       <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
         {isEntityView ? (() => {
           const entity = selection.entry
-          const entityTypeColor = getTypeColor(entity.isA)
-          const entityLightColor = getTypeLightColor(entity.isA)
+          const entityTypeColor = getTypeColor(entity.isA ?? 'Note')
+          const entityLightColor = getTypeLightColor(entity.isA ?? 'Note')
           const EntityIcon = getTypeIcon(entity.isA)
           return (
             <div className="h-full overflow-y-auto">

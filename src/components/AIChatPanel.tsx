@@ -206,7 +206,7 @@ function useContextNotes(entry: VaultEntry | null) {
 
 export function AIChatPanel({ entry, allContent, entries = [], onClose }: AIChatPanelProps) {
   const [input, setInput] = useState('')
-  const [model, setModel] = useState(MODEL_OPTIONS[0].value)
+  const [model, setModel] = useState<string>(MODEL_OPTIONS[0].value)
   const [showSearch, setShowSearch] = useState(false)
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
