@@ -87,7 +87,7 @@ function resolveRefs(refs: string[], entries: VaultEntry[]): VaultEntry[] {
     .filter((e): e is VaultEntry => e !== undefined)
 }
 
-function sortByModified(a: VaultEntry, b: VaultEntry): number {
+export function sortByModified(a: VaultEntry, b: VaultEntry): number {
   return (getDisplayDate(b) ?? 0) - (getDisplayDate(a) ?? 0)
 }
 
@@ -123,7 +123,7 @@ function addGroup(
   }
 }
 
-function buildRelationshipGroups(
+export function buildRelationshipGroups(
   entity: VaultEntry,
   allEntries: VaultEntry[],
   allContent: Record<string, string>,
@@ -196,7 +196,7 @@ function buildRelationshipGroups(
   return groups
 }
 
-function filterEntries(entries: VaultEntry[], selection: SidebarSelection, _modifiedFiles?: ModifiedFile[]): VaultEntry[] {
+export function filterEntries(entries: VaultEntry[], selection: SidebarSelection, _modifiedFiles?: ModifiedFile[]): VaultEntry[] {
   switch (selection.kind) {
     case 'filter':
       switch (selection.filter) {

@@ -89,6 +89,32 @@ function deleteMockFrontmatterProperty(path: string, key: string): string {
   return `---\n${newLines.join('\n')}\n---${rest}`
 }
 
+async function loadNoteContent(path: string): Promise<string> {
+  return isTauri()
+    ? invoke<string>('get_note_content', { path })
+    : mockInvoke<string>('get_note_content', { path })
+}
+
+async function replaceTabWithEntry(
+  entry: VaultEntry,
+  currentPath: string,
+  setTabs: React.Dispatch<React.SetStateAction<Tab[]>>,
+  setActiveTabPath: React.Dispatch<React.SetStateAction<string | null>>,
+) {
+  const applyReplace = (content: string) => {
+    setTabs((prev) => prev.map((t) =>
+      t.entry.path === currentPath ? { entry, content } : t
+    ))
+    setActiveTabPath(entry.path)
+  }
+  try {
+    applyReplace(await loadNoteContent(entry.path))
+  } catch (err) {
+    console.warn('Failed to load note content for replace:', err)
+    applyReplace('')
+  }
+}
+
 export function useNoteActions(
   addEntry: (entry: VaultEntry, content: string) => void,
   updateContent: (path: string, content: string) => void,
@@ -112,9 +138,7 @@ export function useNoteActions(
 
     // Load content async, then add tab and set active together
     try {
-      const content = isTauri()
-        ? await invoke<string>('get_note_content', { path: entry.path })
-        : await mockInvoke<string>('get_note_content', { path: entry.path })
+      const content = await loadNoteContent(entry.path)
       setTabs((prev) => {
         if (prev.some((t) => t.entry.path === entry.path)) return prev
         return [...prev, { entry, content }]
@@ -281,6 +305,13 @@ export function useNoteActions(
     return handleUpdateFrontmatter(path, key, value)
   }, [handleUpdateFrontmatter])
 
+  const handleReplaceActiveTab = useCallback(async (entry: VaultEntry) => {
+    const currentPath = activeTabPathRef.current
+    if (!currentPath) { handleSelectNote(entry); return }
+    if (currentPath === entry.path) return
+    replaceTabWithEntry(entry, currentPath, setTabs, setActiveTabPath)
+  }, [handleSelectNote])
+
   const closeAllTabs = useCallback(() => {
     setTabs([])
     setActiveTabPath(null)
@@ -300,6 +331,7 @@ export function useNoteActions(
     handleUpdateFrontmatter,
     handleDeleteProperty,
     handleAddProperty,
+    handleReplaceActiveTab,
     closeAllTabs,
   }
 }
