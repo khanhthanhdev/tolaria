@@ -12,6 +12,7 @@ import { StatusBar } from './components/StatusBar'
 import { useVaultLoader } from './hooks/useVaultLoader'
 import { useNoteActions } from './hooks/useNoteActions'
 import { useAppKeyboard } from './hooks/useAppKeyboard'
+import { isTauri } from './mock-tauri'
 import type { SidebarSelection, GitCommit } from './types'
 import './App.css'
 
@@ -24,11 +25,16 @@ declare global {
 
 const DEFAULT_SELECTION: SidebarSelection = { kind: 'filter', filter: 'all' }
 
-const VAULTS = [
-  { label: 'Demo v2', path: '/Users/luca/Workspace/laputa-app/demo-vault-v2' },
-  { label: 'Laputa', path: '/Users/luca/Laputa' },
-  { label: 'Demo', path: '/Users/luca/Workspace/laputa-app/demo-vault' },
-]
+// In web/browser mode: only Demo v2 (no real vault access)
+// In native Tauri mode: Demo v2 + real Laputa vault
+const VAULTS = isTauri()
+  ? [
+      { label: 'Demo v2', path: '/Users/luca/Workspace/laputa-app/demo-vault-v2' },
+      { label: 'Laputa', path: '/Users/luca/Laputa' },
+    ]
+  : [
+      { label: 'Demo v2', path: '/Users/luca/Workspace/laputa-app/demo-vault-v2' },
+    ]
 
 const BUILT_IN_TYPE_NAMES = new Set([
   'Project', 'Experiment', 'Responsibility', 'Procedure',
