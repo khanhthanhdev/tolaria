@@ -1,5 +1,6 @@
 import { useMemo, useCallback, useState, useRef } from 'react'
 import type { ComponentType, SVGAttributes } from 'react'
+import { wikilinkTarget, wikilinkDisplay } from '../utils/wikilink'
 import type { VaultEntry, GitCommit } from '../types'
 import {
   Wrench, Flask, Target, ArrowsClockwise,
@@ -22,20 +23,6 @@ function getTypeIcon(isA: string | undefined): ComponentType<SVGAttributes<SVGSV
 
 function isWikilink(value: string): boolean {
   return /^\[\[.*\]\]$/.test(value)
-}
-
-function wikilinkDisplay(ref: string): string {
-  const inner = ref.replace(/^\[\[|\]\]$/g, '')
-  const pipeIdx = inner.indexOf('|')
-  if (pipeIdx !== -1) return inner.slice(pipeIdx + 1)
-  const last = inner.split('/').pop() ?? inner
-  return last.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-}
-
-export function wikilinkTarget(ref: string): string {
-  const inner = ref.replace(/^\[\[|\]\]$/g, '')
-  const pipeIdx = inner.indexOf('|')
-  return pipeIdx !== -1 ? inner.slice(0, pipeIdx) : inner
 }
 
 function resolveRef(ref: string, entries: VaultEntry[]): VaultEntry | undefined {

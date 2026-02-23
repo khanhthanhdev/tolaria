@@ -182,10 +182,10 @@ function routeNoteClick(
 
 interface NoteListDataParams {
   entries: VaultEntry[]; selection: SidebarSelection; allContent: Record<string, string>
-  query: string; listSort: SortOption; listDirection: SortDirection; modifiedFiles?: ModifiedFile[]
+  query: string; listSort: SortOption; listDirection: SortDirection
 }
 
-function useNoteListData({ entries, selection, allContent, query, listSort, listDirection, modifiedFiles }: NoteListDataParams) {
+function useNoteListData({ entries, selection, allContent, query, listSort, listDirection }: NoteListDataParams) {
   const isEntityView = selection.kind === 'entity'
   const isTrashView = selection.kind === 'filter' && selection.filter === 'trash'
 
@@ -198,7 +198,7 @@ function useNoteListData({ entries, selection, allContent, query, listSort, list
     if (isEntityView) return []
     const sorted = [...filterEntries(entries, selection)].sort(getSortComparator(listSort, listDirection))
     return filterByQuery(sorted, query)
-  }, [entries, selection, modifiedFiles, isEntityView, listSort, listDirection, query])
+  }, [entries, selection, isEntityView, listSort, listDirection, query])
 
   const searchedGroups = useMemo(() => {
     if (!isEntityView) return []

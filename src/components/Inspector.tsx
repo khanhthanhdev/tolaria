@@ -4,7 +4,8 @@ import { cn } from '@/lib/utils'
 import { SlidersHorizontal, X } from '@phosphor-icons/react'
 import { parseFrontmatter } from '../utils/frontmatter'
 import { DynamicPropertiesPanel } from './DynamicPropertiesPanel'
-import { DynamicRelationshipsPanel, BacklinksPanel, ReferencedByPanel, GitHistoryPanel, wikilinkTarget } from './InspectorPanels'
+import { DynamicRelationshipsPanel, BacklinksPanel, ReferencedByPanel, GitHistoryPanel } from './InspectorPanels'
+import { wikilinkTarget } from '../utils/wikilink'
 import type { ReferencedByItem } from './InspectorPanels'
 
 export type FrontmatterValue = string | number | boolean | string[] | null
